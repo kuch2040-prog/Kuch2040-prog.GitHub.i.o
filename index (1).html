@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Royal Chess — Play Chess Online</title>
+<style>
+:root{--bg:#262522;--panel:#302e2b;--panel2:#3a3835;--text:#eee;--muted:#aaa;--green:#81b64c;--light:#f0d9b5;--dark:#b58863;--blue:#3b82f6}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Arial,sans-serif}
+button,select{font:inherit}button{border:0;cursor:pointer}
+.top{height:62px;background:#171615;display:flex;align-items:center;padding:0 22px;gap:24px;position:sticky;top:0;z-index:5}
+.logo{font-weight:900;font-size:22px;letter-spacing:.3px}.logo span{color:#81b64c}.nav{display:flex;gap:6px}.nav button{background:transparent;color:#bbb;padding:10px 14px;border-radius:7px}.nav button:hover{background:#2b2927;color:#fff}
+.topRight{margin-left:auto;display:flex;gap:8px}.iconBtn{background:#292826;color:#ddd;padding:10px 12px;border-radius:7px}
+.layout{max-width:1450px;margin:auto;padding:22px;display:grid;grid-template-columns:minmax(520px,760px) 360px;gap:24px;justify-content:center}
+.game{min-width:0}.player{height:52px;display:flex;align-items:center;gap:12px}.avatar{width:34px;height:34px;border-radius:7px;background:#444;display:grid;place-items:center;font-size:20px}.pname{font-weight:700}.rating{color:#999;font-size:12px}.clock{margin-left:auto;background:#151514;padding:8px 15px;border-radius:7px;font-weight:800;font-size:21px;min-width:90px;text-align:center}.clock.active{background:#fff;color:#111}.board{width:min(760px,calc(100vw - 44px));aspect-ratio:1;display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);border-radius:3px;overflow:hidden;box-shadow:0 8px 28px #0008}
+.sq{position:relative;display:grid;place-items:center;cursor:pointer;font-size:clamp(30px,7.3vw,70px);line-height:1;user-select:none}.sq.light{background:var(--light)}.sq.dark{background:var(--dark)}
+.sq.selected{box-shadow:inset 0 0 0 5px #f6f669}.sq.last{background:#cdd26a}.sq.check{background:#e16b5a}
+.piece{position:relative;z-index:2;font-family:"DejaVu Sans","Noto Sans Symbols 2",serif;text-shadow:0 2px 1px #0005}.whitePiece{color:#fff}.blackPiece{color:#222}
+.dot{position:absolute;width:22%;height:22%;border-radius:50%;background:#0004;z-index:3}.capture{position:absolute;inset:7%;border:5px solid #0004;border-radius:50%;z-index:3}
+.coord{position:absolute;font-size:11px;font-weight:800;z-index:4;pointer-events:none}.file{right:4px;bottom:3px}.rank{left:4px;top:3px}.light .coord{color:var(--dark)}.dark .coord{color:var(--light)}
+.below{display:flex;gap:8px;margin-top:12px}.green{background:var(--green);color:#fff;font-weight:800;padding:12px 18px;border-radius:7px}.secondary{background:#44413e;color:#fff;padding:12px 18px;border-radius:7px}
+.side{background:var(--panel);border-radius:10px;overflow:hidden;min-height:620px;display:flex;flex-direction:column}.tabs{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid #444}.tabs button{padding:15px 5px;background:transparent;color:#aaa}.tabs .on{color:#fff;border-bottom:3px solid var(--green)}
+.mode{padding:14px;border-bottom:1px solid #444}.mode label{font-size:12px;color:#aaa;display:block;margin-bottom:6px}.mode select{width:100%;background:#242321;color:#fff;border:1px solid #555;border-radius:6px;padding:10px}
+.status{padding:14px;font-weight:800;text-align:center;background:#272624}.moves{height:365px;overflow:auto;background:#242321}.row{display:grid;grid-template-columns:42px 1fr 1fr;padding:10px 14px}.row:nth-child(odd){background:#292724}.row span:first-child{color:#888}.captured{padding:10px 14px;color:#ccc;min-height:40px;font-size:21px;border-top:1px solid #444}.sideActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px;margin-top:auto}.sideActions button{background:#44413e;color:#fff;padding:11px;border-radius:6px}
+.menu{display:none;position:fixed;inset:0;background:#171615ee;z-index:20;padding:80px 25px}.menu button{display:block;width:100%;margin:10px 0;padding:14px;background:#302e2b;color:#fff;border-radius:7px}
+@media(max-width:1000px){.layout{grid-template-columns:1fr;max-width:800px}.side{min-height:500px}.moves{height:220px}}
+@media(max-width:650px){.top{padding:0 12px}.nav{display:none}.layout{padding:10px}.board{width:calc(100vw - 20px)}.side{border-radius:7px}.clock{font-size:18px}.topRight .iconBtn:nth-child(1){display:none}}
+</style>
+</head>
+<body>
+<header class="top">
+<div class="logo">♟ <span>Royal</span> Chess</div>
+<nav class="nav"><button>Play</button><button>Puzzles</button><button>Learn</button><button>Watch</button></nav>
+<div class="topRight"><button class="iconBtn" id="theme">☀</button><button class="iconBtn" id="newTop">＋ New Game</button></div>
+</header>
+
+<main class="layout">
+<section class="game">
+<div class="player"><div class="avatar">♟</div><div><div class="pname">Black</div><div class="rating">Player 2</div></div><div id="blackClock" class="clock">03:00</div></div>
+<div id="board" class="board"></div>
+<div class="player"><div class="avatar">♙</div><div><div class="pname">White</div><div class="rating">You</div></div><div id="whiteClock" class="clock">03:00</div></div>
+<div class="below"><button class="green" id="newGame">New Game</button><button class="secondary" id="undo">↩ Undo</button><button class="secondary" id="flip">⇅ Flip</button></div>
+</section>
+
+<aside class="side">
+<div class="tabs"><button class="on">Game</button><button>Moves</button><button>Settings</button></div>
+<div class="mode"><label>PLAY MODE</label><select id="mode"><option value="human">👥 Human vs Human</option><option value="robot">🤖 Human vs Robot</option></select></div>
+<div class="mode"><label>TIME CONTROL</label><select id="time"><option value="180">⚡ Blitz — 3 min</option><option value="300">Rapid — 5 min</option><option value="600">Rapid — 10 min</option><option value="900">Classical — 15 min</option></select></div>
+<div id="status" class="status">White to move</div>
+<div id="moves" class="moves"></div>
+<div class="captured"><b>Captured:</b> <span id="captured">—</span></div>
+<div class="sideActions"><button id="resign">Resign</button><button id="draw">Offer Draw</button></div>
+</aside>
+</main>
+
+<script>
+const F="abcdefgh",I={wp:"♙",wn:"♘",wb:"♗",wr:"♖",wq:"♕",wk:"♔",bp:"♟",bn:"♞",bb:"♝",br:"♜",bq:"♛",bk:"♚"};
+let B,turn,sel=null,moves=[],hist=[],last=null,cap=[],flip=false,over=false,mode="human",timers={w:180,b:180},tick;
+
+function setup(){B=Array.from({length:8},()=>Array(8).fill(null));let back="rnbqkbnr";for(let c=0;c<8;c++){B[0][c]={c:"b",t:back[c],m:0};B[1][c]={c:"b",t:"p",m:0};B[6][c]={c:"w",t:"p",m:0};B[7][c]={c:"w",t:back[c],m:0}}turn="w";sel=null;moves=[];hist=[];last=null;cap=[];over=false;timers.w=+time.value;timers.b=timers.w;clock();drawBoard()}
+function cp(b){return b.map(r=>r.map(p=>p?{...p}:null))}
+function inb(r,c){return r>=0&&r<8&&c>=0&&c<8}
+function enemy(p,c){return p&&p.c!==c}
+function attack(b,r,c,tr,tc){let p=b[r][c],dr=tr-r,dc=tc-c;if(!p)return false;if(p.t=="p")return dr==(p.c=="w"?-1:1)&&Math.abs(dc)==1;if(p.t=="n")return Math.abs(dr)*Math.abs(dc)==2;if(p.t=="k")return Math.max(Math.abs(dr),Math.abs(dc))==1;let diag=Math.abs(dr)==Math.abs(dc),str=dr==0||dc==0;if((p.t=="b"&&!diag)||(p.t=="r"&&!str)||(p.t=="q"&&!(diag||str)))return false;let sr=Math.sign(dr),sc=Math.sign(dc),rr=r+sr,cc=c+sc;while(rr!=tr||cc!=tc){if(b[rr][cc])return false;rr+=sr;cc+=sc}return true}
+function attacked(b,r,c,by){for(let y=0;y<8;y++)for(let x=0;x<8;x++)if(b[y][x]?.c==by&&attack(b,y,x,r,c))return true;return false}
+function check(b,col){for(let r=0;r<8;r++)for(let c=0;c<8;c++)if(b[r][c]?.c==col&&b[r][c].t=="k")return attacked(b,r,c,col=="w"?"b":"w");return true}
+function pseudo(b,r,c){let p=b[r][c],o=[];if(!p)return o;let add=(rr,cc,x={})=>{if(inb(rr,cc)&&(!b[rr][cc]||enemy(b[rr][cc],p.c)))o.push({r:rr,c:cc,...x})};if(p.t=="p"){let d=p.c=="w"?-1:1,s=p.c=="w"?6:1;if(inb(r+d,c)&&!b[r+d][c]){o.push({r:r+d,c});if(r==s&&!b[r+2*d][c])o.push({r:r+2*d,c})}for(let dc of[-1,1])if(enemy(b[r+d]?.[c+dc],p.c))o.push({r:r+d,c:c+dc,capture:true});if(last&&last.p.t=="p"&&Math.abs(last.from.r-last.to.r)==2&&last.to.r==r&&Math.abs(last.to.c-c)==1)o.push({r:r+d,c:last.to.c,ep:true,capture:true})}
+else if(p.t=="n")[[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]].forEach(a=>add(r+a[0],c+a[1]));
+else if("brq".includes(p.t)){let d=[];if("bq".includes(p.t))d.push([1,1],[1,-1],[-1,1],[-1,-1]);if("rq".includes(p.t))d.push([1,0],[-1,0],[0,1],[0,-1]);for(let z of d){let rr=r+z[0],cc=c+z[1];while(inb(rr,cc)){if(!b[rr][cc])o.push({r:rr,c:cc});else{if(enemy(b[rr][cc],p.c))o.push({r:rr,c:cc,capture:true});break}rr+=z[0];cc+=z[1]}}}
+else {for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++)if(dr||dc)add(r+dr,c+dc);if(p.t=="k"&&!p.m&&!check(b,p.c)){for(let s of[1,-1]){let rc=s==1?7:0,rook=b[r][rc],step=s;let empty=s==1?[5,6]:[1,2,3];if(rook?.t=="r"&&!rook.m&&empty.every(x=>!b[r][x])&&!attacked(b,r,c+step,p.c=="w"?"b":"w")&&!attacked(b,r,c+2*step,p.c=="w"?"b":"w"))o.push({r,c:c+2*step,castle:true,rf:{r,c:rc},rt:{r,c:c+step}})}}}return o}
+function legal(r,c){let p=B[r][c],o=[];for(let m of pseudo(B,r,c)){let n=cp(B),t=n[m.r][m.c];n[m.r][m.c]={...n[r][c],m:n[r][c].m+1};n[r][c]=null;if(m.ep)n[r][m.c]=null;if(m.castle){n[m.rt.r][m.rt.c]=n[m.rf.r][m.rf.c];n[m.rf.r][m.rf.c]=null}if(!check(n,p.c))o.push(m)}return o}
+function all(col){let a=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++)if(B[r][c]?.c==col)legal(r,c).forEach(to=>a.push({from:{r,c},to}));return a}
+function notation(p,from,to,capt,castle){if(castle)return to.c>from.c?"O-O":"O-O-O";return(p.t=="p"?"":p.t.toUpperCase())+(capt?"x":"")+F[to.c]+(8-to.r)}
+function play(from,m){let p=B[from.r][from.c],target=B[m.r][m.c];hist.push({B:cp(B),turn,timers:{...timers},cap:[...cap],last});B[m.r][m.c]={...p,m:p.m+1};B[from.r][from.c]=null;if(m.ep){cap.push(B[from.r][m.c]);B[from.r][m.c]=null}else if(target)cap.push(target);if(m.castle){B[m.rt.r][m.rt.c]={...B[m.rf.r][m.rf.c],m:1};B[m.rf.r][m.rf.c]=null}if(p.t=="p"&&(m.r==0||m.r==7)){let q=(prompt("Promote: Q, R, B or N","Q")||"Q").toLowerCase();B[m.r][m.c].t="qrbn".includes(q)?q:"q"}last={from,to:m,p:{...p},notation:notation(p,from,m,!!target||m.ep,m.castle)};turn=turn=="w"?"b":"w";sel=null;moves=[];drawBoard();end();if(mode=="robot"&&turn=="b"&&!over)setTimeout(robot,300)}
+function robot(){let a=all("b");if(!a.length)return;let caps=a.filter(x=>x.to&&B[x.to.r][x.to.c]);(()=>{const pool=caps.length?caps:a;const choice=pool[Math.floor(Math.random()*pool.length)];play(choice.from,choice.to)})()}
+function end(){let a=all(turn),ch=check(B,turn);status.textContent=!a.length?(over=true,ch?(turn=="w"?"Checkmate — Black wins!":"Checkmate — White wins!"):"Draw — Stalemate"):(ch?"Check — ":"")+(turn=="w"?"White":"Black")+" to move";drawBoard()}
+function drawBoard(){board.innerHTML="";for(let rr=0;rr<8;rr++)for(let cc=0;cc<8;cc++){let r=flip?7-rr:rr,c=flip?7-cc:cc,s=document.createElement("div");s.className="sq "+((r+c)%2?"dark":"light");if(last&&((last.from.r==r&&last.from.c==c)||(last.to.r==r&&last.to.c==c)))s.classList.add("last");if(sel?.r==r&&sel?.c==c)s.classList.add("selected");if(check(B,turn)&&B[r][c]?.c==turn&&B[r][c].t=="k")s.classList.add("check");let p=B[r][c];if(p){let q=document.createElement("span");q.className="piece "+(p.c=="w"?"whitePiece":"blackPiece");q.textContent=I[p.c+p.t];s.appendChild(q)}let lm=moves.find(x=>x.r==r&&x.c==c);if(lm){let d=document.createElement("i");d.className=lm.capture?"capture":"dot";s.appendChild(d)}if(c==0){let z=document.createElement("b");z.className="coord rank";z.textContent=8-r;s.appendChild(z)}if(r==7){let z=document.createElement("b");z.className="coord file";z.textContent=F[c];s.appendChild(z)}s.onclick=()=>click(r,c);board.appendChild(s)}captured.textContent=cap.length?cap.map(p=>I[p.c+p.t]).join(" "):"—";movesBox()}
+function click(r,c){if(over||(mode=="robot"&&turn=="b"))return;if(sel){let m=moves.find(x=>x.r==r&&x.c==c);if(m){play(sel,m);return}}if(B[r][c]?.c==turn){sel={r,c};moves=legal(r,c);drawBoard()}}
+function movesBox(){let x=document.getElementById("moves");x.innerHTML="";for(let i=0;i<hist.length;i+=2){let row=document.createElement("div");row.className="row";row.innerHTML=`<span>${i/2+1}.</span><span>${hist[i]?.last?.notation||""}</span><span>${hist[i+1]?.last?.notation||""}</span>`;x.appendChild(row)}x.scrollTop=x.scrollHeight}
+function fmt(s){return String(Math.floor(Math.max(0,s)/60)).padStart(2,"0")+":"+String(Math.max(0,s)%60).padStart(2,"0")}
+function clock(){clearInterval(tick);tick=setInterval(()=>{if(over)return;timers[turn]--;if(timers[turn]<=0){timers[turn]=0;over=true;status.textContent=(turn=="w"?"Black":"White")+" wins on time!"}whiteClock.textContent=fmt(timers.w);blackClock.textContent=fmt(timers.b);whiteClock.classList.toggle("active",turn=="w"&&!over);blackClock.classList.toggle("active",turn=="b"&&!over)},1000)}
+newGame.onclick=setup;newTop.onclick=setup;document.getElementById("flip").onclick=()=>{flip=!flip;drawBoard()};document.getElementById("mode").onchange=e=>{mode=e.target.value;setup()};document.getElementById("time").onchange=setup;document.getElementById("undo").onclick=()=>{if(!hist.length)return;let h=hist.pop();B=h.B;turn=h.turn;timers=h.timers;cap=h.cap;last=h.last;over=false;drawBoard()};document.getElementById("resign").onclick=()=>{if(!over){over=true;status.textContent=(turn=="w"?"Black":"White")+" wins by resignation!"}};document.getElementById("draw").onclick=()=>{if(!over){over=true;status.textContent="Draw agreed"}};document.getElementById("theme").onclick=()=>{document.body.classList.toggle("lightTheme")};
+setup();
+</script>
+</body>
+</html>
